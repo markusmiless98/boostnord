@@ -9,12 +9,24 @@ public class PathDrawer : MonoBehaviour {
     public BoxCollider target;
     public LineRenderer line;
     public Text infoText;
+    public Gradient lineGradient;
+
+    public float packagePickupRange;
+
 
     Node[] nodes;
     List<Node> path = new List<Node>();
+    List<Package> packagesForPickup = new List<Package>();
+
+    List<Package> packages = new List<Package>();
+
+
 
     void Start() {
         nodes = transform.GetComponentsInChildren<Node>();
+
+        // Temporary way to get packages (In final game they will be loaded into the list as they get added, not using Find())
+        packages = new List<Package>(GameObject.Find("Packages").GetComponentsInChildren<Package>());
     }
 
     // Use this to check if there is a connection between two nodes
@@ -42,7 +54,14 @@ public class PathDrawer : MonoBehaviour {
         return closestNode;
     }
 
-
+    // Gets a list of all packes within the packagePickupRange of a node.
+    List<Package> PackagesInRangeOfNodes(Node node1, Node node2) {
+        List<Package> results = new List<Package>();
+        foreach (Package package in packages)
+            if (Vector3.Distance(package.transform.position, NearestPointOnLine(node1.transform.position, node2.transform.position, package.transform.position)) < packagePickupRange)
+                results.Add(package);
+        return results;
+    }
 
     void Update() {
         if (Input.GetMouseButton(0)) {
@@ -75,7 +94,32 @@ public class PathDrawer : MonoBehaviour {
                 }
 
             }
+        } else {
+            if (IsPathComplete()) {
+                foreach (Package package in packagesForPickup) {
+                    package.SetState(Package.PackageState.awaitingPickup);
+                }
+                ClearPath();
+            }
         }
+
+        packagesForPickup.Clear();
+
+        for (int i = 0; i < path.Count - 1; i++) {
+            foreach (Package package in PackagesInRangeOfNodes(path[i], path[i + 1])) {
+                if (packagesForPickup.IndexOf(package) == -1 &&
+                    package.state != Package.PackageState.awaitingPickup) {
+                    packagesForPickup.Add(package);
+                }
+            }
+        }
+
+        foreach (Package package in packages) {
+            if (package.state == Package.PackageState.notice || package.state == Package.PackageState.readyForSelection) {
+                package.SetState(packagesForPickup.IndexOf(package) == -1 ? Package.PackageState.notice : Package.PackageState.readyForSelection);
+            }
+        }
+
 
         // Set amount of path points for the line
         line.positionCount = path.Count;
@@ -92,19 +136,37 @@ public class PathDrawer : MonoBehaviour {
             line.SetPosition(i, node.transform.position);
         }
 
-        // Gradient for the line
-        float alpha = 1.0f;
-        Gradient gradient = new Gradient();
-        gradient.SetKeys(
-            new GradientColorKey[] { new GradientColorKey(Color.green, 0.0f), new GradientColorKey(Color.red, 1.0f) },
-            new GradientAlphaKey[] { new GradientAlphaKey(alpha, 0.0f), new GradientAlphaKey(alpha, 1.0f) }
-        );
-        line.colorGradient = gradient;
+        line.colorGradient = lineGradient;
 
-        // Display some info text
+        // Temporary: Display some info text
         infoText.text = "Distance: " + Math.Round(tripDistance) + "\n" +
-              "Nodes: " + path.Count + "\nComplete: " + IsPathComplete() + "\nUses bike path: " + UsesBikePath();
+              "Nodes: " + path.Count + "\nComplete: " + IsPathComplete() + "\nUses bike path: " + UsesBikePath() + "\n" +
+              "Packages " + packagesForPickup.Count + "/" + GetAmountOfPackagesToPickup();
 
+    }
+
+    public int GetAmountOfPackagesToPickup() {
+        int amount = 0;
+        foreach (Package package in packages) {
+            if (package.state != Package.PackageState.awaitingPickup) amount++;
+        }
+        return amount;
+    }
+
+
+    public static Vector3 NearestPointOnLine(Vector3 start, Vector3 end, Vector3 pnt) {
+        Vector3 line = (end - start);
+        float len = line.magnitude;
+        line.Normalize();
+
+        Vector3 v = pnt - start;
+        float d = Vector3.Dot(v, line);
+        d = Mathf.Clamp(d, 0f, len);
+        return start + line * d;
+    }
+
+    public void ClearPath() {
+        path.Clear();
     }
 
     bool UsesBikePath() {
