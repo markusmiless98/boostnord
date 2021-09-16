@@ -5,6 +5,9 @@ using UnityEngine;
 
 public class VehicleInfoScript : MonoBehaviour {
 
+    public enum VehicleType {
+        Car, Truck, Bicycle, ElectricCar
+    }
 
     [Tooltip("How many packages can be carried by the vehicle.")] public int VehicleStorage = 0;
     [Tooltip("The effective range of the vehicle. Higher is better, as a penalty is to be applied when suprassing it.")] public float VehicleEffectiveRange = 100f;
