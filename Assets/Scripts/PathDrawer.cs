@@ -165,7 +165,6 @@ public class PathDrawer : MonoBehaviour {
                     order.path = packagePath;
                     order.vehicle = VehicleInfoScript.VehicleType.Car;
 
-                    vehicleManager.SpawnVehicle(order);
                     // Send the order...
                 }
 

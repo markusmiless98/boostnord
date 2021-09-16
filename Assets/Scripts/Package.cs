@@ -4,8 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Package : MonoBehaviour
-{
+public class Package : MonoBehaviour {
 
     public Image icon;
     public Image background;
@@ -21,17 +20,13 @@ public class Package : MonoBehaviour
     public int packagesToDeliver = 0;
     bool initialized = false;
 
-    public bool HasBeenPickedUp = false;
-
     [Serializable]
-    public enum PackageState
-    {
+    public enum PackageState {
         notice, readyForSelection, awaitingPickup
     }
 
     [Serializable]
-    public struct PackageStateVisual
-    {
+    public struct PackageStateVisual {
         public PackageState state;
         public Color32 color;
         public Sprite icon;
@@ -39,15 +34,12 @@ public class Package : MonoBehaviour
 
     public PackageStateVisual[] visuals;
 
-    public PackageStateVisual GetVisual(PackageState state)
-    {
-        foreach (PackageStateVisual visual in visuals)
-        {
+    public PackageStateVisual GetVisual(PackageState state) {
+        foreach (PackageStateVisual visual in visuals) {
             if (visual.state == state) return visual;
         }
         return visuals[0];
     }
-
 
     void Update() {
         amount.text = packagesToDeliver.ToString();
@@ -57,7 +49,6 @@ public class Package : MonoBehaviour
     }
 
     public void SetState(PackageState state) {
-
         if (this.state == state && initialized) return;
         this.state = state;
         initialized = true;
@@ -68,12 +59,4 @@ public class Package : MonoBehaviour
         background.color = visual.color;
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        if (FindObjectOfType<VehicleMovementScript>() != null)
-        {
-            FindObjectOfType<VehicleMovementScript>().AddPackageAsTarget(this);
-        }
-    }
 }
