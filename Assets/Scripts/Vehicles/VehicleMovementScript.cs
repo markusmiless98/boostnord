@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,29 +5,38 @@ public class VehicleMovementScript : MonoBehaviour
 {
     VehicleInfoScript InfoOfVehicle;
 
-    [SerializeField] Vector3 VehicleLocation;
-    Vector3[] TargetLocation;
-    Node[] nodes;
     [SerializeField] List<Node> nodeslist = new List<Node>();
 
     [SerializeField] int CurrentNodeToMoveTo = 0;
     [SerializeField] int MaxCurrentNode = 0;
 
+    Quaternion OldRotation, NewRotation;
+    float timeCount = 0;
+    Vector3 CurrentTransformTarget;
+    float RecentlySwappedRotation = 0;
+
     // Start is called before the first frame update
     void Start()
     {
-        nodes = FindObjectOfType<PathDrawer>().transform.GetComponentsInChildren<Node>();
-        InfoOfVehicle = FindObjectOfType<VehicleInfoScript>();
-        foreach (var item in nodes)
+        // Checks for the Vehicle Information script, first in component in it, then in the scene
+        if (GetComponentInChildren<VehicleInfoScript>())
         {
-            MaxCurrentNode++;
+            ApplyVehicleInformationToMovement(GetComponent<VehicleInfoScript>());
+        }
+        else if (FindObjectOfType<VehicleInfoScript>())
+        {
+            ApplyVehicleInformationToMovement(FindObjectOfType<VehicleInfoScript>());
+        }
+        else
+        {
+            Debug.LogError("No Vehicle Information is Present in the scene");
         }
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKey(KeyCode.Space) && nodeslist != null)
+        if (Input.GetKey(KeyCode.Space) && nodeslist != null && nodeslist.Count > 0)
         {
             DoVehicleMovement();
         }
@@ -45,22 +53,36 @@ public class VehicleMovementScript : MonoBehaviour
         Debug.Log("SPACE");
     }
 
+    public void ApplyVehicleInformationToMovement(VehicleInfoScript theInformation)
+    {
+        InfoOfVehicle = theInformation;
+    }
+
+    // Moves vehicle between the different nodes
     private void DoVehicleMovement()
     {
         if (CurrentNodeToMoveTo <= MaxCurrentNode - 1)
         {
             var targetPos = nodeslist[CurrentNodeToMoveTo].transform.position;
-            VehicleLocation = targetPos;
             var MovementThisFrame = InfoOfVehicle.VehicleMovementSpeed * Time.deltaTime;
+            transform.LookAt(targetPos);
             transform.position = Vector3.MoveTowards(transform.position, targetPos, MovementThisFrame);
-            if (transform.position == targetPos)
+            if (transform.position == targetPos && TargetIsPackage(CurrentNodeToMoveTo))
             {
                 CurrentNodeToMoveTo++;
+                RecentlySwappedRotation = 0;
             }
         }
         else
         {
-            Debug.Log("W");
+            Debug.Log("Well done");
+            nodeslist.Clear();
+            CurrentNodeToMoveTo = 0;
         }
+    }
+
+    public bool TargetIsPackage(int theGameObjectThatIsHopefullyPackageInt)
+    {
+        return theGameObjectThatIsHopefullyPackageInt >= 0;
     }
 }
