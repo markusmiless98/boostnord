@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,14 +7,10 @@ public class VehicleMovementScript : MonoBehaviour
     VehicleInfoScript InfoOfVehicle;
 
     [SerializeField] List<Node> nodeslist = new List<Node>();
+    [SerializeField] List<Package> packageList = new List<Package>();
 
     [SerializeField] int CurrentNodeToMoveTo = 0;
     [SerializeField] int MaxCurrentNode = 0;
-
-    Quaternion OldRotation, NewRotation;
-    float timeCount = 0;
-    Vector3 CurrentTransformTarget;
-    float RecentlySwappedRotation = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -67,10 +64,12 @@ public class VehicleMovementScript : MonoBehaviour
             var MovementThisFrame = InfoOfVehicle.VehicleMovementSpeed * Time.deltaTime;
             transform.LookAt(targetPos);
             transform.position = Vector3.MoveTowards(transform.position, targetPos, MovementThisFrame);
-            if (transform.position == targetPos && TargetIsPackage(CurrentNodeToMoveTo))
+            if (transform.position == targetPos)
             {
-                CurrentNodeToMoveTo++;
-                RecentlySwappedRotation = 0;
+                if (!TargetIsPackage())
+                {
+                    CurrentNodeToMoveTo++;
+                }
             }
         }
         else
@@ -81,8 +80,30 @@ public class VehicleMovementScript : MonoBehaviour
         }
     }
 
-    public bool TargetIsPackage(int theGameObjectThatIsHopefullyPackageInt)
+    public void AddPackageAsTarget(Package ThePackage)
     {
-        return theGameObjectThatIsHopefullyPackageInt >= 0;
+        packageList.Add(ThePackage);
+    }
+
+    public bool TargetIsPackage()
+    {
+        foreach (var packages in packageList)
+        {
+            if (Mathf.Abs(nodeslist[CurrentNodeToMoveTo].transform.position.x - packages.transform.position.x) < 4f && Mathf.Abs(nodeslist[CurrentNodeToMoveTo].transform.position.z - packages.transform.position.z) < 4f)
+            {
+                if (packages.HasBeenPickedUp == false)
+                {
+                    StartCoroutine(PickUpObjectAfterDelay(packages));
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private IEnumerator PickUpObjectAfterDelay(Package thePackage)
+    {
+        yield return new WaitForSeconds(0.5f);
+        thePackage.HasBeenPickedUp = true;
     }
 }
