@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    [SerializeField] private float movementTime = 10, zoomAmount = 2;
+    [SerializeField] private float movementTime = 10, zoomAmount = 2, maxZoom = 10, minZoom = 5;
     private Camera _camera;
     private Vector3 _newPos, _newZoom, _dragStartPosition, _dragCurrentPosition;
 
@@ -45,6 +45,8 @@ public class CameraController : MonoBehaviour
                 _newPos = transform.position + _dragStartPosition - _dragCurrentPosition;
             }
         }
+
+        _newZoom.y = Mathf.Clamp(_newZoom.y, minZoom, maxZoom);
         _camera.transform.localPosition =
             Vector3.Lerp(_camera.transform.localPosition, _newZoom, Time.deltaTime * movementTime);
         transform.position = 

@@ -367,5 +367,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: Camera Rig
       objectReference: {fileID: 0}
+    - target: {fileID: 2715836757694359202, guid: e1ff4ed68cfefbd42b69a14959aff6e5, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 6.71
+      objectReference: {fileID: 0}
+    - target: {fileID: 2715836757694359202, guid: e1ff4ed68cfefbd42b69a14959aff6e5, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 2715836757694359202, guid: e1ff4ed68cfefbd42b69a14959aff6e5, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 2715836757694359202, guid: e1ff4ed68cfefbd42b69a14959aff6e5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 90
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e1ff4ed68cfefbd42b69a14959aff6e5, type: 3}
