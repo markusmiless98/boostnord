@@ -12,6 +12,8 @@ public class VehicleMovementScript : MonoBehaviour
     [SerializeField] int CurrentNodeToMoveTo = 0;
     [SerializeField] int MaxCurrentNode = 0;
 
+    [SerializeField] GameObject BoxesToSpawn;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -89,7 +91,7 @@ public class VehicleMovementScript : MonoBehaviour
     {
         foreach (var packages in packageList)
         {
-            if (Mathf.Abs(nodeslist[CurrentNodeToMoveTo].transform.position.x - packages.transform.position.x) < 4f && Mathf.Abs(nodeslist[CurrentNodeToMoveTo].transform.position.z - packages.transform.position.z) < 4f)
+            if (Mathf.Abs(nodeslist[CurrentNodeToMoveTo].transform.position.x - packages.transform.position.x) < 3f && Mathf.Abs(nodeslist[CurrentNodeToMoveTo].transform.position.z - packages.transform.position.z) < 3f)
             {
                 if (packages.HasBeenPickedUp == false)
                 {
@@ -104,6 +106,10 @@ public class VehicleMovementScript : MonoBehaviour
     private IEnumerator PickUpObjectAfterDelay(Package thePackage)
     {
         yield return new WaitForSeconds(0.5f);
+        if (thePackage.HasBeenPickedUp == false)
+        {
+            GameObject EnemyClone = Instantiate(BoxesToSpawn, new Vector3(thePackage.transform.position.x -1f, thePackage.transform.position.y + 2f, thePackage.transform.position.z), transform.rotation);
+        }
         thePackage.HasBeenPickedUp = true;
     }
 }

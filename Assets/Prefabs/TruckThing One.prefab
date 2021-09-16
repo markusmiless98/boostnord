@@ -64,8 +64,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nodeslist: []
+  packageList: []
   CurrentNodeToMoveTo: 0
   MaxCurrentNode: 0
+  BoxesToSpawn: {fileID: 3637376040008051913, guid: 003ed953bda98aa48bf40483f504f806, type: 3}
 --- !u!33 &1792038771887060472
 MeshFilter:
   m_ObjectHideFlags: 0
