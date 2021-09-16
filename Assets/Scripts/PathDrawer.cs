@@ -10,26 +10,35 @@ public class PathDrawer : MonoBehaviour {
     public LineRenderer line;
     public Text infoText;
     public Gradient lineGradient;
+    public PackageManager pm;
 
     public float packagePickupRange;
     public float nodeTouchRange; // Amount of range that there can be between a mouse and a node to draw line
     public bool drawingLine = false;
 
-
+    public int maxCapacity = 20;
+    public int capacity = 0;
+    int leftOver = 0;
 
     Node[] nodes;
     List<Node> path = new List<Node>();
     List<Package> packagesForPickup = new List<Package>();
-
-    List<Package> packages = new List<Package>();
 
 
 
     void Start() {
         nodes = transform.GetComponentsInChildren<Node>();
 
-        // Temporary way to get packages (In final game they will be loaded into the list as they get added, not using Find())
-        packages = new List<Package>(GameObject.Find("Packages").GetComponentsInChildren<Package>());
+        foreach (Node node in nodes) {
+            foreach (Node connectedNode in node.connectedNodes) {
+                if (Array.IndexOf(connectedNode.connectedNodes, node) == -1) {
+                    Array.Resize(ref connectedNode.connectedNodes, connectedNode.connectedNodes.Length + 1);
+                    connectedNode.connectedNodes[connectedNode.connectedNodes.Length - 1] = node;
+                }
+            }
+        }
+
+        pm.Init(nodes);
     }
 
     // Use this to check if there is a connection between two nodes
@@ -60,14 +69,21 @@ public class PathDrawer : MonoBehaviour {
     // Gets a list of all packes within the packagePickupRange of a node.
     List<Package> PackagesInRangeOfNodes(Node node1, Node node2) {
         List<Package> results = new List<Package>();
-        foreach (Package package in packages)
+        foreach (Package package in pm.packages)
             if (Vector3.Distance(package.transform.position, NearestPointOnLine(node1.transform.position, node2.transform.position, package.transform.position)) < packagePickupRange)
                 results.Add(package);
         return results;
     }
 
+    public int CapacityLeft() {
+        int left = maxCapacity - capacity;
+        if (left < 0) left = 0;
+        return left;
+    }
+
 
     void Update() {
+        int lastStopDrop = 0;
         if (Input.GetMouseButton(0)) {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
@@ -106,29 +122,79 @@ public class PathDrawer : MonoBehaviour {
         } else {
             drawingLine = false;
             if (IsPathComplete()) {
-                if (FindObjectOfType<VehicleMovementScript>())
-                {
-                    FindObjectOfType<VehicleMovementScript>().DoVehicleMovementUpdate(path);
+                if (packagesForPickup.Count > 0) {
+                    for (int i = 0; i < packagesForPickup.Count; i++) {
+                        Package package = packagesForPickup[i];
+
+                        if (i == packagesForPickup.Count - 1 && leftOver > 0) {
+                            lastStopDrop = package.packagesToDeliver - leftOver;
+                            package.packagesToDeliver = leftOver;
+                        } else {
+                            package.packagesToDeliver = 0;
+                            package.SetState(Package.PackageState.awaitingPickup);
+                        }
+                    }
+
+                    List<PackagePoint> packagePath = new List<PackagePoint>();
+
+                    for (int i = 0; i < path.Count; i++) {
+                        Node node = path[i];
+
+                        if (packagesForPickup.Count > 0) {
+                            Package package = packagesForPickup[0];
+                            if (package.nodeIndex == i && i < path.Count + 1) {
+                                Vector3 pickupPoint = NearestPointOnLine(node.transform.position, path[i + 1].transform.position, package.transform.position);
+
+                                int packagesToDrop = 0;
+                                if (packagesForPickup.Count == 1) {
+                                    packagesToDrop = package.packagesToDeliver - leftOver;
+                                    package.packagesToDeliver = leftOver;
+                                } else if (packagesForPickup.Count > 1) {
+                                    package.packagesToDeliver = 0;
+                                }
+
+
+                                packagePath.Add(new PackagePoint(pickupPoint, packagesToDrop));
+                                packagesForPickup.RemoveAt(0);
+                            }
+                            packagePath.Add(new PackagePoint(node.transform.position, 0));
+                        }
+                    }
+
+                    CollectOrder order = new CollectOrder();
+                    order.path = packagePath;
+                    order.vehicle = VehicleInfoScript.VehicleType.Car;
+
+                    // Send the order...
                 }
-                foreach (Package package in packagesForPickup) {
-                    package.SetState(Package.PackageState.awaitingPickup);
-                }
+
+
+
+
                 ClearPath();
             }
         }
 
         packagesForPickup.Clear();
+        capacity = 0;
 
         for (int i = 0; i < path.Count - 1; i++) {
             foreach (Package package in PackagesInRangeOfNodes(path[i], path[i + 1])) {
                 if (packagesForPickup.IndexOf(package) == -1 &&
-                    package.state != Package.PackageState.awaitingPickup) {
+                    package.state != Package.PackageState.awaitingPickup
+                    && capacity < maxCapacity) {
                     packagesForPickup.Add(package);
+
+                    // This determens after which node path this package should be picked up
+                    package.nodeIndex = i;
+
+                    leftOver = -(CapacityLeft() - package.packagesToDeliver);
+                    capacity += package.packagesToDeliver;
                 }
             }
         }
 
-        foreach (Package package in packages) {
+        foreach (Package package in pm.packages) {
             if (package.state == Package.PackageState.notice || package.state == Package.PackageState.readyForSelection) {
                 package.SetState(packagesForPickup.IndexOf(package) == -1 ? Package.PackageState.notice : Package.PackageState.readyForSelection);
             }
@@ -155,13 +221,13 @@ public class PathDrawer : MonoBehaviour {
         // Temporary: Display some info text
         infoText.text = "Distance: " + Math.Round(tripDistance) + "\n" +
               "Nodes: " + path.Count + "\nComplete: " + IsPathComplete() + "\nUses bike path: " + UsesBikePath() + "\n" +
-              "Packages " + packagesForPickup.Count + "/" + GetAmountOfPackagesToPickup();
+              "Capacity " + capacity + "/" + maxCapacity;
 
     }
 
     public int GetAmountOfPackagesToPickup() {
         int amount = 0;
-        foreach (Package package in packages) {
+        foreach (Package package in pm.packages) {
             if (package.state != Package.PackageState.awaitingPickup) amount++;
         }
         return amount;
