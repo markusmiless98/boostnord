@@ -96,6 +96,10 @@ public class PathDrawer : MonoBehaviour {
             }
         } else {
             if (IsPathComplete()) {
+                if (FindObjectOfType<VehicleMovementScript>())
+                {
+                    FindObjectOfType<VehicleMovementScript>().DoVehicleMovementUpdate(path);
+                }
                 foreach (Package package in packagesForPickup) {
                     package.SetState(Package.PackageState.awaitingPickup);
                 }
