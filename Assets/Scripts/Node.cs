@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class Node : MonoBehaviour {
@@ -27,6 +28,7 @@ public class Node : MonoBehaviour {
 
     void OnDrawGizmos() {
         // Draw a yellow sphere at the transform's position
+        Handles.Label(transform.position, gameObject.name);
 
         Gizmos.color = nodeColors[nodeType];
         Gizmos.DrawSphere(transform.position, .5f);
@@ -35,5 +37,6 @@ public class Node : MonoBehaviour {
         foreach (Node node in connectedNodes) {
             Gizmos.DrawLine(transform.position, node.transform.position);
         }
+
     }
 }
