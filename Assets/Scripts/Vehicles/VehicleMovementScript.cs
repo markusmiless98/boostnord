@@ -10,8 +10,10 @@ public class VehicleMovementScript : MonoBehaviour
     [SerializeField] int CurrentNodeToMoveTo = 0;
     [SerializeField] int MaxCurrentNode = 0;
 
-    float DirectionX = 0;
-    float DirectionZ = 0;
+    Quaternion OldRotation, NewRotation;
+    float timeCount = 0;
+    Vector3 CurrentTransformTarget;
+    float RecentlySwappedRotation = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -63,49 +65,24 @@ public class VehicleMovementScript : MonoBehaviour
         {
             var targetPos = nodeslist[CurrentNodeToMoveTo].transform.position;
             var MovementThisFrame = InfoOfVehicle.VehicleMovementSpeed * Time.deltaTime;
-            if (targetPos != transform.position)
-            {
-                TurnVehicleAction(targetPos);
-            }
+            transform.LookAt(targetPos);
             transform.position = Vector3.MoveTowards(transform.position, targetPos, MovementThisFrame);
-            if (transform.position == targetPos)
+            if (transform.position == targetPos && TargetIsPackage(CurrentNodeToMoveTo))
             {
                 CurrentNodeToMoveTo++;
+                RecentlySwappedRotation = 0;
             }
         }
         else
         {
             Debug.Log("Well done");
+            nodeslist.Clear();
+            CurrentNodeToMoveTo = 0;
         }
     }
 
-    private void TurnVehicleAction(Vector3 theLocation)
+    public bool TargetIsPackage(int theGameObjectThatIsHopefullyPackageInt)
     {
-        var vehicleLocation = gameObject.transform.position;
-        if (vehicleLocation.x > theLocation.x * 1.25f)
-        {
-            DirectionX = 5;
-        }
-        else if (vehicleLocation.x < theLocation.x * 0.8)
-        {
-            DirectionX = -5;
-        }
-        else
-        {
-            DirectionX /= 2;
-        }
-        if (vehicleLocation.z > theLocation.z * 1.25f)
-        {
-            DirectionZ = -5;
-        }
-        else if (vehicleLocation.z < theLocation.z * 0.8)
-        {
-            DirectionZ = 5;
-        }
-        else
-        {
-            DirectionZ /= 2;
-        }
-        transform.rotation = Quaternion.Euler(DirectionX, 90, DirectionZ);
+        return theGameObjectThatIsHopefullyPackageInt >= 0;
     }
 }
