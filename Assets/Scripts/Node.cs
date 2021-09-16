@@ -6,25 +6,18 @@ using UnityEngine;
 public class Node : MonoBehaviour {
 
     public enum NodeType {
-        Road, Bike, Terminal
+        Road, Bike, Terminal, RoadNoPackage
     }
 
     public Dictionary<NodeType, Color> nodeColors = new Dictionary<NodeType, Color>() {
         { NodeType.Road, Color.red},
         { NodeType.Bike, Color.blue },
-        { NodeType.Terminal, Color.yellow}};
+        { NodeType.Terminal, Color.yellow},
+    { NodeType.RoadNoPackage, Color.gray}};
 
     public Node[] connectedNodes;
 
     public NodeType nodeType;
-
-    void Start() {
-
-    }
-
-    void Update() {
-
-    }
 
     void OnDrawGizmos() {
         // Draw a yellow sphere at the transform's position
