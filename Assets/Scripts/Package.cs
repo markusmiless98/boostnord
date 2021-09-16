@@ -8,9 +8,16 @@ public class Package : MonoBehaviour {
 
     public Image icon;
     public Image background;
+    public Text amount;
+    public GameObject canvas;
+
+    public int nodeIndex;
+
+    public long timeCreated;
 
     public PackageState state;
 
+    public int packagesToDeliver = 0;
     bool initialized = false;
 
     [Serializable]
@@ -32,6 +39,13 @@ public class Package : MonoBehaviour {
             if (visual.state == state) return visual;
         }
         return visuals[0];
+    }
+
+    void Update() {
+        amount.text = packagesToDeliver.ToString();
+        if (packagesToDeliver <= 0) {
+            canvas.SetActive(false);
+        }
     }
 
     public void SetState(PackageState state) {
