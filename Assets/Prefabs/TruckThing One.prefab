@@ -9,7 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1792038771887060473}
-  - component: {fileID: 1792038771887060422}
   - component: {fileID: 1792038771887060423}
   - component: {fileID: 1792038771887060472}
   - component: {fileID: 1792038771887060420}
@@ -34,23 +33,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
---- !u!114 &1792038771887060422
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1792038771887060421}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c70129ccc97527e44a16552c2a94da21, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  VehicleStorage: 0
-  VehicleEffectiveRange: 100
-  VehicleMovementSpeed: 10
-  VehicleCO2Output: 1000
-  IsWeatherResistantVehicle: 1
 --- !u!114 &1792038771887060423
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -63,11 +45,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd036412fce45042a13451464047907, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nodeslist: []
-  packageList: []
-  CurrentNodeToMoveTo: 0
-  MaxCurrentNode: 0
-  BoxesToSpawn: {fileID: 3637376040008051913, guid: 003ed953bda98aa48bf40483f504f806, type: 3}
 --- !u!33 &1792038771887060472
 MeshFilter:
   m_ObjectHideFlags: 0

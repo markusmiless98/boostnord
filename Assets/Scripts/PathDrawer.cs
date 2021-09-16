@@ -6,6 +6,8 @@ using UnityEngine.UI;
 
 public class PathDrawer : MonoBehaviour {
 
+
+    public VehicleManager vehicleManager;
     public BoxCollider target;
     public LineRenderer line;
     public Text infoText;
@@ -23,8 +25,6 @@ public class PathDrawer : MonoBehaviour {
     Node[] nodes;
     List<Node> path = new List<Node>();
     List<Package> packagesForPickup = new List<Package>();
-
-
 
     void Start() {
         nodes = transform.GetComponentsInChildren<Node>();
@@ -165,6 +165,7 @@ public class PathDrawer : MonoBehaviour {
                     order.path = packagePath;
                     order.vehicle = VehicleInfoScript.VehicleType.Car;
 
+                    vehicleManager.SpawnVehicle(order);
                     // Send the order...
                 }
 
