@@ -12,6 +12,9 @@ public class PathDrawer : MonoBehaviour {
     public Gradient lineGradient;
 
     public float packagePickupRange;
+    public float nodeTouchRange; // Amount of range that there can be between a mouse and a node to draw line
+    public bool drawingLine = false;
+
 
 
     Node[] nodes;
@@ -63,6 +66,7 @@ public class PathDrawer : MonoBehaviour {
         return results;
     }
 
+
     void Update() {
         if (Input.GetMouseButton(0)) {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -72,29 +76,35 @@ public class PathDrawer : MonoBehaviour {
             if (target.Raycast(ray, out hit, 100f)) {
                 Node targetNode = GetClosestNode(hit.point);
 
-                // Add the start of the line when starting from the terminal
-                if (path.Count == 0 && targetNode.nodeType == Node.NodeType.Terminal) {
-                    path.Add(targetNode);
-                }
+                if (Vector3.Distance(targetNode.transform.position, hit.point) <= nodeTouchRange ||
+                    drawingLine) {
 
-                // Check that the target node and previous node has connection
-                if (path.Count > 0 && HasConnection(targetNode, path[path.Count - 1])) {
-                    // Check that the node is not the previous or the one before that
-                    if ((path.Count == 1 || path[path.Count - 2] != targetNode)) {
-                        if (path[path.Count - 1] != targetNode) {
-                            path.Add(targetNode);
+                    drawingLine = true;
+
+                    // Add the start of the line when starting from the terminal
+                    if (path.Count == 0 && targetNode.nodeType == Node.NodeType.Terminal) {
+                        path.Add(targetNode);
+                    }
+
+                    // Check that the target node and previous node has connection
+                    if (path.Count > 0 && HasConnection(targetNode, path[path.Count - 1])) {
+                        // Check that the node is not the previous or the one before that
+                        if ((path.Count == 1 || path[path.Count - 2] != targetNode)) {
+                            if (path[path.Count - 1] != targetNode) {
+                                path.Add(targetNode);
+                            }
                         }
                     }
-                }
 
-                // Remove the last point if you hover over the next to last point.
-                // It's the way to go back on the line
-                if (path.Count >= 2 && targetNode == path[path.Count - 2]) {
-                    path.RemoveAt(path.Count - 1);
+                    // Remove the last point if you hover over the next to last point.
+                    // It's the way to go back on the line
+                    if (path.Count >= 2 && targetNode == path[path.Count - 2]) {
+                        path.RemoveAt(path.Count - 1);
+                    }
                 }
-
             }
         } else {
+            drawingLine = false;
             if (IsPathComplete()) {
                 if (FindObjectOfType<VehicleMovementScript>())
                 {
