@@ -458,6 +458,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4396127088104753228, guid: 7b23f11cddc6d2743aa8804de91babbc, type: 3}
+      propertyPath: m_Value
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4396127089135870377, guid: 7b23f11cddc6d2743aa8804de91babbc, type: 3}
       propertyPath: m_Name
       value: Game UI
@@ -544,6 +548,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4396127089135870421, guid: 7b23f11cddc6d2743aa8804de91babbc, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4396127089261297948, guid: 7b23f11cddc6d2743aa8804de91babbc, type: 3}
+      propertyPath: m_AnchorMax.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4396127089261297948, guid: 7b23f11cddc6d2743aa8804de91babbc, type: 3}
