@@ -8,17 +8,29 @@ public class PathDrawer : MonoBehaviour {
 
     public BoxCollider target;
     public LineRenderer line;
-    public Text infoText;
     public Gradient lineGradient;
     public PackageManager pm;
+
+    public GameObject drawingUI;
+    public Text capacityDisplay;
 
     public float packagePickupRange;
     public float nodeTouchRange; // Amount of range that there can be between a mouse and a node to draw line
     public bool drawingLine = false;
 
+    public AudioClip[] drawingSounds;
+    public AudioSource audio;
+
     public int maxCapacity = 20;
     public int capacity = 0;
     int leftOver = 0;
+    public bool canDraw = false;
+
+    public enum DrawMode {
+        Car, Bicycle
+    }
+
+    public DrawMode mode;
 
     Node[] nodes;
     List<Node> path = new List<Node>();
@@ -81,10 +93,21 @@ public class PathDrawer : MonoBehaviour {
         return left;
     }
 
+    public void PlayDrawingSound() {
+        audio.clip = drawingSounds[UnityEngine.Random.Range(0, drawingSounds.Length)];
+        audio.time = 0;
+        audio.Play();
+    }
 
     void Update() {
+
+        drawingUI.SetActive(path.Count > 1);
+        capacityDisplay.text = capacity + "/" + maxCapacity;
+
         int lastStopDrop = 0;
-        if (Input.GetMouseButton(0)) {
+        if (!canDraw && drawingLine) ClearPath();
+
+        if (Input.GetMouseButton(0) && canDraw) {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
@@ -100,22 +123,28 @@ public class PathDrawer : MonoBehaviour {
                     // Add the start of the line when starting from the terminal
                     if (path.Count == 0 && targetNode.nodeType == Node.NodeType.Terminal) {
                         path.Add(targetNode);
+                        PlayDrawingSound();
                     }
 
                     // Check that the target node and previous node has connection
                     if (path.Count > 0 && HasConnection(targetNode, path[path.Count - 1])) {
-                        // Check that the node is not the previous or the one before that
-                        if ((path.Count == 1 || path[path.Count - 2] != targetNode)) {
-                            if (path[path.Count - 1] != targetNode) {
-                                path.Add(targetNode);
+                        if (!(targetNode.nodeType == Node.NodeType.Bike && mode != DrawMode.Bicycle)) {
+                            // Check that the node is not the previous or the one before that
+                            if ((path.Count == 1 || path[path.Count - 2] != targetNode)) {
+                                if (path[path.Count - 1] != targetNode) {
+                                    path.Add(targetNode);
+                                    PlayDrawingSound();
+                                }
                             }
                         }
+
                     }
 
                     // Remove the last point if you hover over the next to last point.
                     // It's the way to go back on the line
                     if (path.Count >= 2 && targetNode == path[path.Count - 2]) {
                         path.RemoveAt(path.Count - 1);
+                        PlayDrawingSound();
                     }
                 }
             }
@@ -123,48 +152,48 @@ public class PathDrawer : MonoBehaviour {
             drawingLine = false;
             if (IsPathComplete()) {
                 if (packagesForPickup.Count > 0) {
-                    for (int i = 0; i < packagesForPickup.Count; i++) {
-                        Package package = packagesForPickup[i];
 
-                        if (i == packagesForPickup.Count - 1 && leftOver > 0) {
-                            lastStopDrop = package.packagesToDeliver - leftOver;
-                            package.packagesToDeliver = leftOver;
-                        } else {
-                            package.packagesToDeliver = 0;
-                            package.SetState(Package.PackageState.awaitingPickup);
-                        }
-                    }
 
                     List<PackagePoint> packagePath = new List<PackagePoint>();
 
                     for (int i = 0; i < path.Count; i++) {
                         Node node = path[i];
 
-                        if (packagesForPickup.Count > 0) {
+
+                        packagePath.Add(new PackagePoint(node.transform.position, 0, 0));
+
+                        while (packagesForPickup.Count > 0 && packagesForPickup[0].nodeIndex == i) {
                             Package package = packagesForPickup[0];
+
                             if (package.nodeIndex == i && i < path.Count + 1) {
                                 Vector3 pickupPoint = NearestPointOnLine(node.transform.position, path[i + 1].transform.position, package.transform.position);
 
                                 int packagesToDrop = 0;
-                                if (packagesForPickup.Count == 1) {
+                                if (packagesForPickup.Count == 1 && leftOver > 0) {
+
                                     packagesToDrop = package.packagesToDeliver - leftOver;
                                     package.packagesToDeliver = leftOver;
-                                } else if (packagesForPickup.Count > 1) {
+                                } else {
+
+                                    packagesToDrop = package.packagesToDeliver;
                                     package.packagesToDeliver = 0;
+
                                 }
 
-
-                                packagePath.Add(new PackagePoint(pickupPoint, packagesToDrop));
+                                packagePath.Add(new PackagePoint(pickupPoint, packagesToDrop, package.timeCreated));
                                 packagesForPickup.RemoveAt(0);
+                                if (leftOver <= 0) pm.packages.Remove(package);
                             }
-                            packagePath.Add(new PackagePoint(node.transform.position, 0));
+
+
                         }
                     }
 
                     CollectOrder order = new CollectOrder();
                     order.path = packagePath;
-                    order.vehicle = VehicleInfoScript.VehicleType.Car;
+                    order.vehicle = VehicleManager.VehicleType.GasCar;
 
+                    vehicleManager.DeployVehicle(order);
                     // Send the order...
                 }
 
@@ -217,11 +246,6 @@ public class PathDrawer : MonoBehaviour {
         }
 
         line.colorGradient = lineGradient;
-
-        // Temporary: Display some info text
-        infoText.text = "Distance: " + Math.Round(tripDistance) + "\n" +
-              "Nodes: " + path.Count + "\nComplete: " + IsPathComplete() + "\nUses bike path: " + UsesBikePath() + "\n" +
-              "Capacity " + capacity + "/" + maxCapacity;
 
     }
 
