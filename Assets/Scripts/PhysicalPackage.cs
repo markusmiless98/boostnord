@@ -9,7 +9,7 @@ public class PhysicalPackage : MonoBehaviour {
     }
 
     IEnumerator Kill() {
-        yield return new WaitForSeconds(60f);
+        yield return new WaitForSeconds(25f);
         DestroyImmediate(gameObject);
     }
 

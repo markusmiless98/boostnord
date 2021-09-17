@@ -17,14 +17,24 @@ public class VehicleMovementScript : MonoBehaviour {
     public VehicleManager.Vehicle vehicle;
     public Transform packageSpawner;
     public GameObject packagePrefab;
+    public Transform model;
+
+    public GameObject[] packageModels;
 
     public PackagePoint GetPoint() {
         return order.path[pathIndex];
     }
 
+    public void SetModel(GameObject newModel) {
+        while (model.childCount > 0) DestroyImmediate(model.GetChild(0).gameObject);
+        Instantiate(newModel, model);
+    }
+
     void Start() {
         effect.clip = vehicle.template.startupSound;
         effect.time = 0;
+        effect.volume = 1f;
+
         effect.Play();
     }
 
@@ -47,6 +57,9 @@ public class VehicleMovementScript : MonoBehaviour {
         packagesToDropOff--;
 
         effect.clip = packageDropOfSounds[Random.Range(0, packageDropOfSounds.Length)];
+
+        effect.volume = .5f;
+
         effect.time = 0;
         effect.Play();
 

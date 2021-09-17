@@ -67,6 +67,7 @@ public class VehicleManager : MonoBehaviour {
 
     public VehicleTemplate[] vehicleTemplates;
     public List<Vehicle> vehicles = new List<Vehicle>();
+    public GameObject[] packageModels;
 
     void Start() {
         Setup();
@@ -76,10 +77,12 @@ public class VehicleManager : MonoBehaviour {
 
     public void Setup() {
         CreateVehicle(VehicleType.GasCar);
+        CreateVehicle(VehicleType.GasCar);
+        CreateVehicle(VehicleType.GasCar);
+        CreateVehicle(VehicleType.GasTruck);
         CreateVehicle(VehicleType.GasTruck);
         CreateVehicle(VehicleType.EvCar);
-        CreateVehicle(VehicleType.EvCar);
-        CreateVehicle(VehicleType.EvCar);
+
         CreateVehicle(VehicleType.Bicycle);
         CreateVehicle(VehicleType.Bicycle);
         CreateVehicle(VehicleType.Bicycle);
@@ -88,6 +91,8 @@ public class VehicleManager : MonoBehaviour {
         CreateVehicle(VehicleType.Bicycle);
         CreateVehicle(VehicleType.Bicycle);
         CreateVehicle(VehicleType.Bicycle);
+
+        CreateVehicle(VehicleType.EvTruck);
 
         timeStarted = Time.time;
 
@@ -198,7 +203,7 @@ public class VehicleManager : MonoBehaviour {
     }
 
     public void SpawnPackage(Vector3 spawnPoint) {
-        GameObject package = Instantiate(packagePrefab, packages);
+        GameObject package = Instantiate(packageModels[UnityEngine.Random.Range(0, packageModels.Length)], packages);
         package.transform.position = spawnPoint;
     }
 
@@ -211,6 +216,9 @@ public class VehicleManager : MonoBehaviour {
                 obj.vehicle = vehicle;
                 if (vehicle.template.ev) vehicle.charge = 0;
                 vehicle.driving = true;
+
+                obj.SetModel(vehicle.template.model);
+
                 return;
             }
         }
@@ -259,11 +267,11 @@ public class VehicleManager : MonoBehaviour {
         }
 
         // Balance Emissions
-        float emissionsBalance = .15f;
+        float emissionsBalance = .5f;
         if (emissions > 0) coSlider.value = (emissions / (packagesDelivered > 0 ? packagesDelivered : 1)) * emissionsBalance;
 
         // Balance Ratings
-        float ratingsBalance = 3f;
+        float ratingsBalance = 1.5f;
         if (packagesDelivered > 0) ratingSlider.value = (ratings / packagesDelivered + 1) * ratingsBalance;
 
         activePackagesDisplay.text = pm.GetAmountToDeliver().ToString();

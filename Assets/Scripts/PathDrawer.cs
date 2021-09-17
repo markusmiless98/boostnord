@@ -6,6 +6,8 @@ using UnityEngine.UI;
 
 public class PathDrawer : MonoBehaviour {
 
+
+    public VehicleManager vehicleManager;
     public BoxCollider target;
     public LineRenderer line;
     public Gradient lineGradient;
@@ -26,6 +28,7 @@ public class PathDrawer : MonoBehaviour {
     int leftOver = 0;
     public bool canDraw = false;
 
+
     public enum DrawMode {
         Car, Bicycle
     }
@@ -35,7 +38,6 @@ public class PathDrawer : MonoBehaviour {
     Node[] nodes;
     List<Node> path = new List<Node>();
     List<Package> packagesForPickup = new List<Package>();
-
 
 
     void Start() {

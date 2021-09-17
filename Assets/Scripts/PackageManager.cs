@@ -53,8 +53,8 @@ public class PackageManager : MonoBehaviour {
         while (running) {
             // Create a home delivery request
             CreateNewPackageDropOff(1, 2);
-            if (Random.value > .6f) CreateDeliveryStationPackage();
-            yield return new WaitForSeconds(10.0f);
+            if (Random.value > .9f) CreateDeliveryStationPackage();
+            yield return new WaitForSeconds(Random.Range(5, 15));
         }
     }
 
