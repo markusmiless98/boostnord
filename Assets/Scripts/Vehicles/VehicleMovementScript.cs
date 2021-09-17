@@ -25,6 +25,7 @@ public class VehicleMovementScript : MonoBehaviour {
     void Start() {
         effect.clip = vehicle.template.startupSound;
         effect.time = 0;
+        effect.volume = 1f;
         effect.Play();
     }
 
@@ -47,6 +48,7 @@ public class VehicleMovementScript : MonoBehaviour {
         packagesToDropOff--;
 
         effect.clip = packageDropOfSounds[Random.Range(0, packageDropOfSounds.Length)];
+        effect.volume = .5f;
         effect.time = 0;
         effect.Play();
 
