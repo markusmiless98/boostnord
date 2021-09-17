@@ -984,7 +984,7 @@ MonoBehaviour:
     startupSound: {fileID: 8300000, guid: 3f3e255f5b62bc44590791cee0ca23ca, type: 3}
     type: 4
     icon: {fileID: 21300000, guid: 1187d6e43ed37c444b79931d9d2036e3, type: 3}
-    speed: 1
+    speed: 2
     capacity: 3
     name: Bicycle
     emissions: 0
@@ -994,7 +994,7 @@ MonoBehaviour:
     startupSound: {fileID: 8300000, guid: 3a3809ecffc0b6c4586d3b322fbd1ec7, type: 3}
     type: 0
     icon: {fileID: 21300000, guid: 1b82020b87ff58143bf0b306cb5f0c1d, type: 3}
-    speed: 5
+    speed: 5.5
     capacity: 15
     name: Car
     emissions: 5
@@ -1004,7 +1004,7 @@ MonoBehaviour:
     startupSound: {fileID: 8300000, guid: c32f3083b45de0e49b8babd398ee931d, type: 3}
     type: 1
     icon: {fileID: 21300000, guid: def36ea7169efd14496bff0cd1b17a38, type: 3}
-    speed: 3
+    speed: 4
     capacity: 50
     name: Truck
     emissions: 10
@@ -1014,10 +1014,10 @@ MonoBehaviour:
     startupSound: {fileID: 8300000, guid: 90a2e8a3936264e49ac3d23364c2881c, type: 3}
     type: 2
     icon: {fileID: 21300000, guid: c2c4d98d202842d4f9ff5f4035fd5ade, type: 3}
-    speed: 6
+    speed: 5
     capacity: 17
     name: EV Car
-    emissions: 0
+    emissions: 2
     chargeTime: 10
     model: {fileID: 919132149155446097, guid: e8b0392f1cbc86546a0b16a0ff425068, type: 3}
 --- !u!4 &572363125
