@@ -211,6 +211,9 @@ public class VehicleManager : MonoBehaviour {
                 obj.vehicle = vehicle;
                 if (vehicle.template.ev) vehicle.charge = 0;
                 vehicle.driving = true;
+
+                obj.SetModel(vehicle.template.model);
+
                 return;
             }
         }

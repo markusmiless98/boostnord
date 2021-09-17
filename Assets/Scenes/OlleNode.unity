@@ -989,7 +989,7 @@ MonoBehaviour:
     name: Bicycle
     emissions: 0
     chargeTime: 0
-    model: {fileID: 919132149155446097, guid: e8b0392f1cbc86546a0b16a0ff425068, type: 3}
+    model: {fileID: 1714473004346405429, guid: dad633772b8530347ada30a1d6dbf4df, type: 3}
   - ev: 0
     startupSound: {fileID: 8300000, guid: 3a3809ecffc0b6c4586d3b322fbd1ec7, type: 3}
     type: 0
@@ -999,7 +999,7 @@ MonoBehaviour:
     name: Car
     emissions: 5
     chargeTime: 0
-    model: {fileID: 919132149155446097, guid: e8b0392f1cbc86546a0b16a0ff425068, type: 3}
+    model: {fileID: 5785801733434050914, guid: 26f5f4b6796da55439c158309494b4bb, type: 3}
   - ev: 0
     startupSound: {fileID: 8300000, guid: c32f3083b45de0e49b8babd398ee931d, type: 3}
     type: 1
@@ -1009,7 +1009,7 @@ MonoBehaviour:
     name: Truck
     emissions: 10
     chargeTime: 0
-    model: {fileID: 919132149155446097, guid: e8b0392f1cbc86546a0b16a0ff425068, type: 3}
+    model: {fileID: 5785801733434050914, guid: 26f5f4b6796da55439c158309494b4bb, type: 3}
   - ev: 1
     startupSound: {fileID: 8300000, guid: 90a2e8a3936264e49ac3d23364c2881c, type: 3}
     type: 2
@@ -1019,7 +1019,7 @@ MonoBehaviour:
     name: EV Car
     emissions: 0
     chargeTime: 10
-    model: {fileID: 919132149155446097, guid: e8b0392f1cbc86546a0b16a0ff425068, type: 3}
+    model: {fileID: 5785801733434050914, guid: 26f5f4b6796da55439c158309494b4bb, type: 3}
 --- !u!4 &572363125
 Transform:
   m_ObjectHideFlags: 0

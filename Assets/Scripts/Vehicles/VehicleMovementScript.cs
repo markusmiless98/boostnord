@@ -17,9 +17,15 @@ public class VehicleMovementScript : MonoBehaviour {
     public VehicleManager.Vehicle vehicle;
     public Transform packageSpawner;
     public GameObject packagePrefab;
+    public Transform model;
 
     public PackagePoint GetPoint() {
         return order.path[pathIndex];
+    }
+
+    public void SetModel(GameObject newModel) {
+        while (model.childCount > 0) DestroyImmediate(model.GetChild(0).gameObject);
+        Instantiate(newModel, model);
     }
 
     void Start() {
