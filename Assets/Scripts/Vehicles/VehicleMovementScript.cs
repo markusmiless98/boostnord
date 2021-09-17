@@ -5,25 +5,57 @@ using UnityEngine;
 public class VehicleMovementScript : MonoBehaviour {
     /*VehicleInfoScript InfoOfVehicle;*/
     public CollectOrder order;
+    public VehicleManager vm;
+
+    public AudioSource idle, effect;
+
+    public AudioClip[] packageDropOfSounds;
+
     int pathIndex = 0;
+    int packagesToDropOff = 0;
 
-    // Start is called before the first frame update
-    void Start() {
-
-        // Checks for the Vehicle Information script, first in component in it, then in the scene
-        /*if (GetComponentInChildren<VehicleInfoScript>()) {
-            ApplyVehicleInformationToMovement(GetComponent<VehicleInfoScript>());
-        } else if (FindObjectOfType<VehicleInfoScript>()) {
-            ApplyVehicleInformationToMovement(FindObjectOfType<VehicleInfoScript>());
-        } else {
-            Debug.LogError("No Vehicle Information is Present in the scene");
-        }*/
-    }
-
-    // Moves vehicle between the different nodes
+    public VehicleManager.Vehicle vehicle;
+    public Transform packageSpawner;
+    public GameObject packagePrefab;
 
     public PackagePoint GetPoint() {
         return order.path[pathIndex];
+    }
+
+    void Start() {
+        effect.clip = vehicle.template.startupSound;
+        effect.time = 0;
+        effect.Play();
+    }
+
+    private void OnDrawGizmos() {
+        if (order != null) {
+            Gizmos.color = Color.green;
+            Gizmos.DrawSphere(GetPoint().position, .7f);
+        }
+
+        for (int i = pathIndex + 1; i < order.path.Count; i++) {
+            Gizmos.color = Color.gray;
+
+            if (order.path[i].packagesToLeave > 0) Gizmos.color = Color.cyan;
+            Gizmos.DrawSphere(order.path[i].position, order.path[i].packagesToLeave > 0 ? 1f : .7f);
+        }
+    }
+
+    private IEnumerator LeavePackage(float creationTime) {
+        yield return new WaitForSeconds(0.5f);
+        packagesToDropOff--;
+
+        effect.clip = packageDropOfSounds[Random.Range(0, packageDropOfSounds.Length)];
+        effect.time = 0;
+        effect.Play();
+
+        float rating = Time.time - creationTime;
+        vm.SubmitRating(rating);
+
+        vm.SpawnPackage(packageSpawner.position);
+
+        if (packagesToDropOff > 0) yield return LeavePackage(creationTime);
     }
 
     private void DoVehicleMovement() {
@@ -35,76 +67,33 @@ public class VehicleMovementScript : MonoBehaviour {
 
         Vector3 targetPos = GetPoint().position;
 
-        // TODO IMPLEMENT MOVEMENT SPEED HERE
-        float MovementThisFrame = 1f * Time.deltaTime;
+        float MovementThisFrame = vehicle.template.speed * Time.deltaTime;
         transform.LookAt(targetPos);
         transform.position = Vector3.MoveTowards(transform.position, targetPos, MovementThisFrame);
 
         if (transform.position == targetPos) {
+            float distanceTraveled = Vector3.Distance(targetPos, order.path[pathIndex - 1].position);
+            vm.RecordEmissions(distanceTraveled * vehicle.template.emissions);
+
+            vehicle.odometer += distanceTraveled;
+
+            if (GetPoint().packagesToLeave > 0) {
+                packagesToDropOff = GetPoint().packagesToLeave;
+                StartCoroutine(LeavePackage(GetPoint().creationTime));
+            }
             pathIndex++;
         }
 
-        /*if (CurrentNodeToMoveTo <= MaxCurrentNode - 1) {
-            var targetPos = nodeslist[CurrentNodeToMoveTo].transform.position;
-            var MovementThisFrame = InfoOfVehicle.VehicleMovementSpeed * Time.deltaTime;
-            transform.LookAt(targetPos);
-            transform.position = Vector3.MoveTowards(transform.position, targetPos, MovementThisFrame);
-            if (transform.position == targetPos) {
-                if (!TargetIsPackage()) {
-                    CurrentNodeToMoveTo++;
-                }
-            }
-        } else {
-            Debug.Log("Well done");
-            nodeslist.Clear();
-            CurrentNodeToMoveTo = 0;
-        }*/
+        if (pathIndex == order.path.Count) {
+            vm.ReturnVehicle(vehicle);
+            DestroyImmediate(gameObject);
+        }
+
     }
 
-    // Update is called once per frame
+
     void Update() {
-        /* if (Input.GetKey(KeyCode.Space) && nodeslist != null && nodeslist.Count > 0) {
-             DoVehicleMovement();
-         }*/
-
-        DoVehicleMovement();
+        if (packagesToDropOff <= 0) DoVehicleMovement();
     }
 
-    public void DoVehicleMovementUpdate(List<Node> nodeslistthing) {
-        /*foreach (var item in nodeslistthing) {
-            nodeslist.Add(item);
-        }
-        //nodeslist = nodeslistthing;
-        MaxCurrentNode = nodeslistthing.Count;*/
-    }
-
-    /*public void ApplyVehicleInformationToMovement(VehicleInfoScript theInformation) {
-        InfoOfVehicle = theInformation;
-    }*/
-
-
-
-    public void AddPackageAsTarget(Package ThePackage) {
-        /*packageList.Add(ThePackage);*/
-    }
-
-    /*public bool TargetIsPackage() {
-        foreach (var packages in packageList) {
-            if (Mathf.Abs(nodeslist[CurrentNodeToMoveTo].transform.position.x - packages.transform.position.x) < 3f && Mathf.Abs(nodeslist[CurrentNodeToMoveTo].transform.position.z - packages.transform.position.z) < 3f) {
-                if (packages.HasBeenPickedUp == false) {
-                    StartCoroutine(PickUpObjectAfterDelay(packages));
-                    return true;
-                }
-            }
-        }
-        return false;
-    }*/
-
-    /*private IEnumerator PickUpObjectAfterDelay(Package thePackage) {
-        yield return new WaitForSeconds(0.5f);
-        if (thePackage.HasBeenPickedUp == false) {
-            GameObject EnemyClone = Instantiate(BoxesToSpawn, new Vector3(thePackage.transform.position.x - 1f, thePackage.transform.position.y + 2f, thePackage.transform.position.z), transform.rotation);
-        }
-        thePackage.HasBeenPickedUp = true;
-    }*/
 }

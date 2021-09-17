@@ -13,7 +13,7 @@ public class Package : MonoBehaviour {
 
     public int nodeIndex;
 
-    public long timeCreated;
+    public float timeCreated;
 
     public PackageState state;
 
@@ -23,6 +23,10 @@ public class Package : MonoBehaviour {
     [Serializable]
     public enum PackageState {
         notice, readyForSelection, awaitingPickup
+    }
+
+    private void Start() {
+        timeCreated = Time.time;
     }
 
     [Serializable]
