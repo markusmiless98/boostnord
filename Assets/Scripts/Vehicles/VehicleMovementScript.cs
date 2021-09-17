@@ -19,6 +19,8 @@ public class VehicleMovementScript : MonoBehaviour {
     public GameObject packagePrefab;
     public Transform model;
 
+    public GameObject[] packageModels;
+
     public PackagePoint GetPoint() {
         return order.path[pathIndex];
     }

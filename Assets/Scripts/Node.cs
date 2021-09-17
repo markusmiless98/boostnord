@@ -21,7 +21,7 @@ public class Node : MonoBehaviour {
 
     void OnDrawGizmos() {
         // Draw a yellow sphere at the transform's position
-        Handles.Label(transform.position, gameObject.name);
+        //Handles.Label(transform.position, gameObject.name);
 
         Gizmos.color = nodeColors[nodeType];
         Gizmos.DrawSphere(transform.position, .5f);
