@@ -25,19 +25,18 @@ public class PackageManager : MonoBehaviour {
     public PathDrawer path;
     public GameObject packagePrefab;
 
-    public bool running = false;
+    public GameManager gm;
     Node[] nodes;
     public List<Package> packages = new List<Package>();
 
     public Transform deliveryStations;
+    public VehicleManager vm;
 
-
-    public void Stop() {
-        running = false;
-    }
     public void Init(Node[] nodes) {
         this.nodes = nodes;
-        running = true;
+    }
+
+    public void StartSpawningPackages() {
         StartCoroutine(SpawnPackages());
     }
 
@@ -50,7 +49,7 @@ public class PackageManager : MonoBehaviour {
     }
 
     IEnumerator SpawnPackages() {
-        while (running) {
+        while (!gm.paused && vm.timer > 10) {
             // Create a home delivery request
             CreateNewPackageDropOff(1, 2);
             if (Random.value > .9f) CreateDeliveryStationPackage();
@@ -83,7 +82,7 @@ public class PackageManager : MonoBehaviour {
 
         Node startingNode = eligibleNodes[Random.Range(0, eligibleNodes.Count - 1)];
         Node endingNode = startingNode.connectedNodes[Random.Range(0, startingNode.connectedNodes.Length - 1)];
-        Vector3 spawnPosition = Vector3.Lerp(startingNode.transform.position, endingNode.transform.position, Random.RandomRange(0f, 1f));
+        Vector3 spawnPosition = Vector3.Lerp(startingNode.transform.position, endingNode.transform.position, Random.Range(0f, 1f));
         Vector3 direction = (startingNode.transform.position - endingNode.transform.position).normalized;
 
         direction = Quaternion.Euler(0, 90, 0) * direction;
@@ -101,6 +100,11 @@ public class PackageManager : MonoBehaviour {
         package.transform.position = position;
         package.packagesToDeliver = amount;
         packages.Add(package);
+    }
+
+    public void Reset() {
+        packages.Clear();
+        while (transform.childCount > 0) DestroyImmediate(transform.GetChild(0).gameObject);
     }
 
     public void CreateDeliveryStationPackage() {

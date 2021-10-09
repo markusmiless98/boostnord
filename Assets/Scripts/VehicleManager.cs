@@ -26,11 +26,13 @@ public class VehicleManager : MonoBehaviour {
     public float emissions = 0;
     public float ratings = 0;
 
-    public float timeStarted;
+    public float timer;
 
     public AudioClip click;
     public AudioSource audio;
+    public GameManager gm;
 
+    [Serializable]
     public enum VehicleType {
         GasCar, GasTruck, EvCar, EvTruck, Bicycle
     }
@@ -69,38 +71,38 @@ public class VehicleManager : MonoBehaviour {
     public List<Vehicle> vehicles = new List<Vehicle>();
     public GameObject[] packageModels;
 
-    void Start() {
-        Setup();
+    [Serializable]
+    public class VehicleOption {
+        public VehicleType template;
+        public int amount = 0;
     }
 
 
+    public void NewGame(VehicleOption[] options) {
+        vehicles.Clear();
+        DeselectAllButtons();
 
-    public void Setup() {
-        CreateVehicle(VehicleType.GasCar);
-        CreateVehicle(VehicleType.GasCar);
-        CreateVehicle(VehicleType.GasCar);
-        CreateVehicle(VehicleType.GasTruck);
-        CreateVehicle(VehicleType.GasTruck);
-        CreateVehicle(VehicleType.EvCar);
 
-        CreateVehicle(VehicleType.Bicycle);
-        CreateVehicle(VehicleType.Bicycle);
-        CreateVehicle(VehicleType.Bicycle);
-        CreateVehicle(VehicleType.Bicycle);
-        CreateVehicle(VehicleType.Bicycle);
-        CreateVehicle(VehicleType.Bicycle);
-        CreateVehicle(VehicleType.Bicycle);
-        CreateVehicle(VehicleType.Bicycle);
+        packagesDelivered = 0;
+        emissions = 0;
+        ratings = 0;
+        pm.Reset();
 
-        CreateVehicle(VehicleType.EvTruck);
+        while (transform.childCount > 0) DestroyImmediate(transform.GetChild(0).gameObject);
 
-        timeStarted = Time.time;
+        foreach (VehicleOption option in options) {
+            for (int i = 0; i < option.amount; i++) {
+                CreateVehicle(option.template);
+            }
+        }
 
         CreateDeployButtons();
+        pm.StartSpawningPackages();
     }
 
     void CreateDeployButtons() {
         while (deployButtonsParent.childCount > 0) DestroyImmediate(deployButtonsParent.GetChild(0).gameObject);
+        deployButtons.Clear();
 
         foreach (VehicleTemplate template in vehicleTemplates) {
             int amount = GetAmountOfCarsOfType(template.type);
@@ -190,13 +192,12 @@ public class VehicleManager : MonoBehaviour {
         }
     }
 
-    public float GetTimePassed() {
-        return Time.time - timeStarted;
-    }
 
-    void DeselectAllButtons() {
+
+    public void DeselectAllButtons() {
         selectedButton = null;
         path.canDraw = false;
+        path.ClearPath();
         foreach (DeployButton button in deployButtons) {
             button.selected.enabled = false;
         }
@@ -238,46 +239,72 @@ public class VehicleManager : MonoBehaviour {
         return new VehicleTemplate();
     }
 
+    public void OnEndGame() {
+        DeselectAllButtons();
+
+        foreach (Package package in pm.packages) {
+            float rating = Time.time - package.timeCreated;
+            ratings += rating;
+        }
+    }
+
     // Update is called once per frame
     void Update() {
-        foreach (DeployButton button in deployButtons) {
-            button.amount.text = GetAvalibleVehicles(button.type) + "/" + GetVehiclesOfType(button.type).Count;
-            button.disabled.enabled = GetAvalibleVehicles(button.type) == 0;
+        if (!gm.paused) {
+            foreach (DeployButton button in deployButtons) {
+                button.amount.text = GetAvalibleVehicles(button.type) + "/" + GetVehiclesOfType(button.type).Count;
+                button.disabled.enabled = GetAvalibleVehicles(button.type) == 0;
 
-            if (GetTemplate(button.type).ev) {
-                Vehicle mostChargedNotFull = null;
-                foreach (Vehicle vehicle in GetVehiclesOfType(button.type)) {
-                    if (vehicle.template.ev) {
-                        if (vehicle.charge != 100 && (mostChargedNotFull == null || mostChargedNotFull.charge < vehicle.charge)) {
-                            mostChargedNotFull = vehicle;
+                if (GetTemplate(button.type).ev) {
+                    Vehicle mostChargedNotFull = null;
+                    foreach (Vehicle vehicle in GetVehiclesOfType(button.type)) {
+                        if (vehicle.template.ev) {
+                            if (vehicle.charge != 100 && (mostChargedNotFull == null || mostChargedNotFull.charge < vehicle.charge)) {
+                                mostChargedNotFull = vehicle;
+                            }
                         }
                     }
+                    button.charge.value = mostChargedNotFull == null ? 100 : mostChargedNotFull.charge;
                 }
-                button.charge.value = mostChargedNotFull == null ? 100 : mostChargedNotFull.charge;
+            }
+            if (selectedButton != null && GetAvalibleVehicles(selectedButton.type) == 0) DeselectAllButtons();
+
+
+            foreach (Vehicle vehicle in vehicles) {
+                if (vehicle.template.ev && vehicle.charge != 100 && !vehicle.driving) {
+                    vehicle.charge += Time.deltaTime / vehicle.template.chargeTime * 100;
+                    if (vehicle.charge > 100) vehicle.charge = 100;
+                }
+            }
+
+            // Balance Emissions
+
+            coSlider.value = GetEmissionScore();
+
+            // Balance Ratings
+            ratingSlider.value = GetRatingsScore();
+
+            activePackagesDisplay.text = pm.GetAmountToDeliver().ToString();
+            packagesCollectedDisplay.text = packagesDelivered.ToString();
+            timer -= Time.deltaTime;
+            if (timer < 0) timer = 0;
+            timeDisplay.text = ZeroPadd((timer / 60)) + ":" + ZeroPadd((timer % 60));
+
+            if (timer <= 0) {
+                gm.EndGame();
             }
         }
-        if (selectedButton != null && GetAvalibleVehicles(selectedButton.type) == 0) DeselectAllButtons();
+    }
 
-
-        foreach (Vehicle vehicle in vehicles) {
-            if (vehicle.template.ev && vehicle.charge != 100 && !vehicle.driving) {
-                vehicle.charge += Time.deltaTime / vehicle.template.chargeTime * 100;
-                if (vehicle.charge > 100) vehicle.charge = 100;
-            }
-        }
-
-        // Balance Emissions
-        float emissionsBalance = .5f;
-        if (emissions > 0) coSlider.value = (emissions / (packagesDelivered > 0 ? packagesDelivered : 1)) * emissionsBalance;
-
-        // Balance Ratings
+    public float GetRatingsScore() {
         float ratingsBalance = 1.5f;
-        if (packagesDelivered > 0) ratingSlider.value = (ratings / packagesDelivered + 1) * ratingsBalance;
+        return ratings > 0 ? (ratings / packagesDelivered + 1) * ratingsBalance : 0;
+    }
 
-        activePackagesDisplay.text = pm.GetAmountToDeliver().ToString();
-        packagesCollectedDisplay.text = packagesDelivered.ToString();
-        timeDisplay.text = ZeroPadd((GetTimePassed() / 60)) + ":" + ZeroPadd((GetTimePassed() % 60));
-
+    public float GetEmissionScore() {
+        float emissionsBalance = .5f;
+        if (emissions == 0) return 0;
+        return (emissions / (packagesDelivered > 0 ? packagesDelivered : 1)) * emissionsBalance;
     }
 
     public string ZeroPadd(double value) {

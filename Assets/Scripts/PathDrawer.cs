@@ -6,7 +6,6 @@ using UnityEngine.UI;
 
 public class PathDrawer : MonoBehaviour {
 
-
     public VehicleManager vehicleManager;
     public BoxCollider target;
     public LineRenderer line;
@@ -38,6 +37,10 @@ public class PathDrawer : MonoBehaviour {
     Node[] nodes;
     List<Node> path = new List<Node>();
     List<Package> packagesForPickup = new List<Package>();
+
+    public Image terminalSelect;
+
+    public Color32 terminalHighlight, terminalReturn;
 
 
     void Start() {
@@ -103,10 +106,12 @@ public class PathDrawer : MonoBehaviour {
 
     void Update() {
 
+        terminalSelect.enabled = drawingLine || canDraw;
+        terminalSelect.color = packagesForPickup.Count > 0 ? terminalReturn : terminalHighlight;
+
         drawingUI.SetActive(path.Count > 1);
         capacityDisplay.text = capacity + "/" + maxCapacity;
 
-        int lastStopDrop = 0;
         if (!canDraw && drawingLine) ClearPath();
 
         if (Input.GetMouseButton(0) && canDraw) {
@@ -198,9 +203,6 @@ public class PathDrawer : MonoBehaviour {
                     vehicleManager.DeployVehicle(order);
                     // Send the order...
                 }
-
-
-
 
                 ClearPath();
             }

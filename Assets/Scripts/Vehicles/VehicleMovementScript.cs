@@ -64,6 +64,7 @@ public class VehicleMovementScript : MonoBehaviour {
         effect.Play();
 
         float rating = Time.time - creationTime;
+        if (rating > 30) rating = 30;
         vm.SubmitRating(rating);
 
         vm.SpawnPackage(packageSpawner.position);
