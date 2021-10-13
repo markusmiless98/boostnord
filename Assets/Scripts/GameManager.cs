@@ -5,223 +5,265 @@ using UnityEngine;
 using UnityEngine.UI;
 
 [Serializable]
-public class GameMode {
-    public string name;
-    public Sprite icon;
-    public VehicleManager.VehicleOption[] vehicles;
+public class GameMode
+{
+	public string name;
+	public Sprite icon;
+	public VehicleManager.VehicleOption[] vehicles;
 }
 
-public class GameManager : MonoBehaviour {
+public class GameManager : MonoBehaviour
+{
 
-    public bool paused = true;
-    bool inGame = false;
-    bool musicEnabled = true; // TODO PLAYER PREFS
-    public VehicleManager vm;
+	public bool paused = true;
+	bool inGame = false;
+	bool musicEnabled = true; // TODO PLAYER PREFS
+	public VehicleManager vm;
 
-    public GameMode[] gamemodes;
-    public AudioSource music;
+	public GameMode[] gamemodes;
+	public AudioSource music;
 
-    public Transform gameModeButtons;
-    public GameObject gameModeButtonPrefab;
-    public GameObject mainMenu;
+	public Transform gameModeButtons;
+	public GameObject gameModeButtonPrefab;
+	public GameObject mainMenu;
 
-    public CameraController cameraController;
+	public CameraController cameraController;
 
-    public GameObject pauseMenu;
-    public Image musicIcon;
+	public GameObject pauseMenu;
+	public Image musicIcon;
 
-    public Sprite musicOn, musicOff;
+	public Sprite musicOn, musicOff;
 
-    public GameObject endScreen;
-    public Transform leafs, stars;
-    public Color32 leafColor, starColor, disabledScoreColor;
-    public Text scoreText;
+	public GameObject endScreen;
+	public Transform leafs, stars;
+	public Color32 leafColor, starColor, disabledScoreColor;
+	public Text scoreText;
 
-    public GameObject startScreen;
+	public GameObject startScreen;
 
-    GameMode selectedGameMode = null;
+	GameMode selectedGameMode = null;
 
-    [System.Serializable]
-    public class Highscore {
-        public int score;
-        public string gamemode;
-    }
-    [System.Serializable]
-    public class HighscoreList {
-        public Highscore[] highscores;
-    }
+	[System.Serializable]
+	public class Highscore
+	{
+		public int score;
+		public string gamemode;
+	}
+	[System.Serializable]
+	public class HighscoreList
+	{
+		public Highscore[] highscores;
+	}
 
-    Dictionary<string, int> highscores = new Dictionary<string, int>();
+	Dictionary<string, int> highscores = new Dictionary<string, int>();
 
-    void SetMainMenuDisplay(bool visible) {
-        mainMenu.SetActive(visible);
-    }
-    void SetGameModeButtonsDisplay(bool visible) {
-        gameModeButtons.gameObject.SetActive(visible);
-    }
+	public void ToggleFullscreen()
+	{
+		Screen.fullScreen = !Screen.fullScreen;
+	}
 
-    void Start() {
+	void SetMainMenuDisplay(bool visible)
+	{
+		mainMenu.SetActive(visible);
+	}
+	void SetGameModeButtonsDisplay(bool visible)
+	{
+		gameModeButtons.gameObject.SetActive(visible);
+	}
 
-        if (PlayerPrefs.HasKey("music")) {
-            musicEnabled = PlayerPrefs.GetInt("music") == 1 ? true : false;
-        }
+	void Start()
+	{
 
-        if (PlayerPrefs.HasKey("highscores")) {
+		if (PlayerPrefs.HasKey("music"))
+		{
+			musicEnabled = PlayerPrefs.GetInt("music") == 1 ? true : false;
+		}
 
-            HighscoreList rawScores = JsonUtility.FromJson<HighscoreList>(PlayerPrefs.GetString("highscores"));
-            foreach (Highscore highscore in rawScores.highscores) {
-                highscores.Add(highscore.gamemode, highscore.score);
-            }
-        }
+		SetMusicIcon();
 
-        ReloadGamemodeButtons();
-        SetGameModeButtonsDisplay(true);
-        GoToMainMenu();
+		if (PlayerPrefs.HasKey("highscores"))
+		{
 
-        UpdateMusicState();
-        ShowStartScreen();
-    }
+			HighscoreList rawScores = JsonUtility.FromJson<HighscoreList>(PlayerPrefs.GetString("highscores"));
+			foreach (Highscore highscore in rawScores.highscores)
+			{
+				highscores.Add(highscore.gamemode, highscore.score);
+			}
+		}
 
-    public void ShowStartScreen() {
-        startScreen.SetActive(true);
-    }
+		ReloadGamemodeButtons();
+		SetGameModeButtonsDisplay(true);
+		GoToMainMenu();
 
-    public void HideStartScreen() {
-        startScreen.SetActive(false);
-    }
+		UpdateMusicState();
+		ShowStartScreen();
+	}
 
-    void SaveHighScores() {
-        HighscoreList rawScores = new HighscoreList();
-        rawScores.highscores = new Highscore[highscores.Count];
-        int index = 0;
-        foreach (KeyValuePair<string, int> score in highscores) {
-            Highscore rawScore = new Highscore();
-            rawScore.gamemode = score.Key;
-            rawScore.score = score.Value;
-            rawScores.highscores[index] = rawScore;
-            index++;
-        }
-        string json = JsonUtility.ToJson(rawScores);
+	public void ShowStartScreen()
+	{
+		startScreen.SetActive(true);
+	}
 
-        PlayerPrefs.SetString("highscores", json);
-    }
+	public void HideStartScreen()
+	{
+		startScreen.SetActive(false);
+	}
 
-    void SetMusicIcon() {
-        musicIcon.sprite = musicEnabled ? musicOn : musicOff;
-    }
+	void SaveHighScores()
+	{
+		HighscoreList rawScores = new HighscoreList();
+		rawScores.highscores = new Highscore[highscores.Count];
+		int index = 0;
+		foreach (KeyValuePair<string, int> score in highscores)
+		{
+			Highscore rawScore = new Highscore();
+			rawScore.gamemode = score.Key;
+			rawScore.score = score.Value;
+			rawScores.highscores[index] = rawScore;
+			index++;
+		}
+		string json = JsonUtility.ToJson(rawScores);
 
-    public void GoToMainMenu() {
-        ClosePauseMenu();
-        SetMainMenuDisplay(true);
-        HideEndScreen();
-        inGame = false;
-        paused = true;
-    }
+		PlayerPrefs.SetString("highscores", json);
+	}
 
-    public void RestartGame() {
-        ClosePauseMenu();
-        StartGame(selectedGameMode);
-    }
+	void SetMusicIcon()
+	{
+		musicIcon.sprite = musicEnabled ? musicOn : musicOff;
+	}
 
-    public void OpenPauseMenu() {
-        if (!inGame) return;
-        paused = true;
-        pauseMenu.SetActive(true);
-    }
+	public void GoToMainMenu()
+	{
+		ClosePauseMenu();
+		SetMainMenuDisplay(true);
+		HideEndScreen();
+		inGame = false;
+		paused = true;
+	}
 
-    public void ClosePauseMenu() {
-        paused = false;
-        pauseMenu.SetActive(false);
-    }
+	public void RestartGame()
+	{
+		ClosePauseMenu();
+		StartGame(selectedGameMode);
+	}
 
-    public void ToggleMusic() {
-        musicEnabled = !musicEnabled;
-        PlayerPrefs.SetInt("music", musicEnabled ? 1 : 0);
-        SetMusicIcon();
-        UpdateMusicState();
-    }
+	public void OpenPauseMenu()
+	{
+		if (!inGame) return;
+		paused = true;
+		pauseMenu.SetActive(true);
+	}
 
-    public void UpdateMusicState() {
-        music.mute = !musicEnabled;
-    }
+	public void ClosePauseMenu()
+	{
+		paused = false;
+		pauseMenu.SetActive(false);
+	}
 
-    void Update() {
-        if (inGame) {
-            if (Input.GetKeyDown(KeyCode.Escape)) {
-                if (paused) ClosePauseMenu();
-                else OpenPauseMenu();
-            }
-        }
-        if (Input.anyKey) {
-            HideStartScreen();
-        }
-    }
+	public void ToggleMusic()
+	{
+		musicEnabled = !musicEnabled;
+		PlayerPrefs.SetInt("music", musicEnabled ? 1 : 0);
+		SetMusicIcon();
+		UpdateMusicState();
+	}
 
-    public void EndGame() {
-        vm.OnEndGame();
-        ShowEndScreen();
-        paused = true;
-        inGame = false;
+	public void UpdateMusicState()
+	{
+		music.mute = !musicEnabled;
+	}
 
-        float emissions = SetIconScore(leafs, vm.GetEmissionScore(), leafColor, disabledScoreColor);
-        float reviews = SetIconScore(stars, vm.GetRatingsScore(), starColor, disabledScoreColor);
-        int score = (int)Mathf.Round(emissions * reviews);
+	void Update()
+	{
+		if (inGame)
+		{
+			if (Input.GetKeyDown(KeyCode.Escape))
+			{
+				if (paused) ClosePauseMenu();
+				else OpenPauseMenu();
+			}
+		}
+		if (Input.anyKey)
+		{
+			HideStartScreen();
+		}
+	}
 
-        scoreText.text = score.ToString();
-        SetHighScore(selectedGameMode.name, score);
-        ReloadGamemodeButtons();
-    }
+	public void EndGame()
+	{
+		vm.OnEndGame();
+		ShowEndScreen();
+		paused = true;
+		inGame = false;
 
-    float SetIconScore(Transform parent, float score, Color32 activeColor, Color32 disabledColor) {
-        score = 100f - score;
-        for (int i = 0; i < parent.childCount; i++)
-            parent.GetChild(i).GetComponent<Image>().color = score >= ((i + 1) * 100 / parent.childCount) ? activeColor : disabledColor;
-        return score >= 0 ? score : 0;
-    }
+		float emissions = SetIconScore(leafs, vm.GetEmissionScore(), leafColor, disabledScoreColor);
+		float reviews = SetIconScore(stars, vm.GetRatingsScore(), starColor, disabledScoreColor);
+		int score = (int)Mathf.Round(emissions * reviews * (vm.packagesDelivered / 40));
 
-    void HideEndScreen() {
-        endScreen.SetActive(false);
-    }
+		scoreText.text = score.ToString();
+		SetHighScore(selectedGameMode.name, score);
+		ReloadGamemodeButtons();
+	}
 
-    void ShowEndScreen() {
-        endScreen.SetActive(true);
-    }
+	float SetIconScore(Transform parent, float score, Color32 activeColor, Color32 disabledColor)
+	{
+		score = 100f - score;
+		for (int i = 0; i < parent.childCount; i++)
+			parent.GetChild(i).GetComponent<Image>().color = score >= ((i + 1) * 100 / parent.childCount) ? activeColor : disabledColor;
+		return score >= 0 ? score : 0;
+	}
 
-    void SetHighScore(string gamemode, int score) {
-        if (highscores.ContainsKey(gamemode) && highscores[gamemode] > score) return;
-        highscores[gamemode] = score;
-        SaveHighScores();
-    }
+	void HideEndScreen()
+	{
+		endScreen.SetActive(false);
+	}
 
-    int GetHighscore(string gamemode) {
-        if (highscores.ContainsKey(gamemode)) return highscores[gamemode];
-        return -1;
-    }
+	void ShowEndScreen()
+	{
+		endScreen.SetActive(true);
+	}
 
-    void ReloadGamemodeButtons() {
-        while (gameModeButtons.childCount > 0) DestroyImmediate(gameModeButtons.GetChild(0).gameObject);
-        foreach (GameMode gamemode in gamemodes) {
-            Transform button = Instantiate(gameModeButtonPrefab, gameModeButtons).transform;
+	void SetHighScore(string gamemode, int score)
+	{
+		if (highscores.ContainsKey(gamemode) && highscores[gamemode] > score) return;
+		highscores[gamemode] = score;
+		SaveHighScores();
+	}
 
-            button.Find("Icon").GetComponent<Image>().sprite = gamemode.icon;
-            button.Find("Name").GetComponent<Text>().text = gamemode.name;
-            int highscore = GetHighscore(gamemode.name);
-            button.Find("Score").GetComponent<Text>().text = highscore == -1 ? "-" : highscore.ToString();
-            button.GetComponent<Button>().onClick.AddListener(() => {
-                StartGame(gamemode);
-            });
-        }
-    }
+	int GetHighscore(string gamemode)
+	{
+		if (highscores.ContainsKey(gamemode)) return highscores[gamemode];
+		return -1;
+	}
 
-    void StartGame(GameMode gamemode) {
-        inGame = true;
-        selectedGameMode = gamemode;
-        SetMainMenuDisplay(false);
-        HideEndScreen();
-        vm.timer = 90f;
-        paused = false;
+	void ReloadGamemodeButtons()
+	{
+		while (gameModeButtons.childCount > 0) DestroyImmediate(gameModeButtons.GetChild(0).gameObject);
+		foreach (GameMode gamemode in gamemodes)
+		{
+			Transform button = Instantiate(gameModeButtonPrefab, gameModeButtons).transform;
 
-        vm.NewGame(gamemode.vehicles);
-        cameraController.ResetValues();
-    }
+			button.Find("Icon").GetComponent<Image>().sprite = gamemode.icon;
+			button.Find("Name").GetComponent<Text>().text = gamemode.name;
+			int highscore = GetHighscore(gamemode.name);
+			button.Find("Score").GetComponent<Text>().text = highscore == -1 ? "-" : highscore.ToString();
+			button.GetComponent<Button>().onClick.AddListener(() =>
+			{
+				StartGame(gamemode);
+			});
+		}
+	}
+
+	void StartGame(GameMode gamemode)
+	{
+		inGame = true;
+		selectedGameMode = gamemode;
+		SetMainMenuDisplay(false);
+		HideEndScreen();
+		vm.timer = 90f;
+		paused = false;
+
+		vm.NewGame(gamemode.vehicles);
+		cameraController.ResetValues();
+	}
 }

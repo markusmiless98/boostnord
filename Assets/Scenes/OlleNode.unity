@@ -2742,7 +2742,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 375a50bdf3be496429cddbb21a8e5749, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0.376
+  m_Volume: 0.279
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -9573,6 +9573,34 @@ PrefabInstance:
     - target: {fileID: 7455411184198961029, guid: 7b23f11cddc6d2743aa8804de91babbc, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -40
+      objectReference: {fileID: 0}
+    - target: {fileID: 7690362099504393397, guid: 7b23f11cddc6d2743aa8804de91babbc, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7690362099504393397, guid: 7b23f11cddc6d2743aa8804de91babbc, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7690362099504393397, guid: 7b23f11cddc6d2743aa8804de91babbc, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 26406959}
+    - target: {fileID: 7690362099504393397, guid: 7b23f11cddc6d2743aa8804de91babbc, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7690362099504393397, guid: 7b23f11cddc6d2743aa8804de91babbc, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: ToggleFullscreen
+      objectReference: {fileID: 0}
+    - target: {fileID: 7690362099504393397, guid: 7b23f11cddc6d2743aa8804de91babbc, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: GameManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 7690362099504393397, guid: 7b23f11cddc6d2743aa8804de91babbc, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 7850117088954767039, guid: 7b23f11cddc6d2743aa8804de91babbc, type: 3}
       propertyPath: m_AnchorMax.y
